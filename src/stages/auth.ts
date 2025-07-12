@@ -1,7 +1,19 @@
 import { Browser, Builder, By, until } from 'selenium-webdriver'
+import { Options as ChromeOptions } from 'selenium-webdriver/chrome'
 
 export async function openMediumAndClickStartReading() {
-    const driver = await new Builder().forBrowser('chrome').build();
+    const chromeOptions = new ChromeOptions();
+    chromeOptions.addArguments('--headless');
+    chromeOptions.addArguments('--no-sandbox');
+    chromeOptions.addArguments('--disable-dev-shm-usage');
+    chromeOptions.addArguments('--disable-gpu');
+    chromeOptions.addArguments('--remote-debugging-port=9222');
+    chromeOptions.addArguments('--user-data-dir=/tmp/chrome-user-data');
+
+    const driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(chromeOptions)
+        .build();
 
     try {
         console.log('Открываю сайт Medium.com...');
@@ -10,19 +22,16 @@ export async function openMediumAndClickStartReading() {
         // Ждем загрузки страницы
         await driver.sleep(3000);
 
+        // Добавляем отладку - посмотрим все кнопки на странице
         console.log('Ищу кнопку "Start reading"...');
 
-        // Ждем появления кнопки (до 10 секунд)
-        await driver.wait(until.elementLocated(By.xpath("//button[contains(text(), 'Start reading')]")), 10000);
+        // Ищем кнопку по тексту "Start reading"
+        const button = await driver.findElement(By.xpath("//button[contains(normalize-space(), 'Start')]"));
 
-        // Ищем кнопку
-        const button = await driver.findElement(By.xpath("//button[contains(text(), 'Start reading')]"));
-
-        // Проверяем, что кнопка видима и кликабельна
+        // Ждем, пока кнопка станет видимой
         await driver.wait(until.elementIsVisible(button), 5000);
-        await driver.wait(until.elementIsEnabled(button), 5000);
 
-        console.log('Кнопка "Start reading" найдена!');
+        console.log('Кнопка "Start reading" найдена по тексту!');
 
         // Кликаем по кнопке
         await button.click();
