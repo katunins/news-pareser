@@ -8,7 +8,6 @@ export async function openMediumAndClickStartReading() {
     // .addArguments('--window-size=1280,800'); // задаём разумный viewport
     options.addArguments('--headless=new')
     options.addArguments("--headless")
-
     let driver = new Builder()
         .forBrowser(Browser.CHROME)
         .setChromeOptions(options)
