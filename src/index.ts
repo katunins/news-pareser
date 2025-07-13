@@ -1,31 +1,49 @@
 import puppeteer from 'puppeteer'
 
 async function app() {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+        ],
+        executablePath: process.env.CHROME_BIN || undefined
+    });
 
-    // Navigate the page to a URL.
-    await page.goto('https://developer.chrome.com/');
+    try {
+        const page = await browser.newPage();
 
-    // Set screen size.
-    await page.setViewport({ width: 1080, height: 1024 });
+        // Navigate the page to a URL.
+        await page.goto('https://developer.chrome.com/');
 
-    // Type into search box using accessible input name.
-    await page.locator('aria/Search').fill('automate beyond recorder');
+        // Set screen size.
+        await page.setViewport({ width: 1080, height: 1024 });
 
-    // Wait and click on first result.
-    await page.locator('.devsite-result-item-link').click();
+        // Type into search box using accessible input name.
+        await page.locator('aria/Search').fill('automate beyond recorder');
 
-    // Locate the full title with a unique string.
-    const textSelector = await page
-        .locator('text/Customize and automate')
-        .waitHandle();
-    const fullTitle = await textSelector?.evaluate(el => el.textContent);
+        // Wait and click on first result.
+        await page.locator('.devsite-result-item-link').click();
 
-    // Print the full title.
-    console.log('The title of this blog post is "%s".', fullTitle);
+        // Locate the full title with a unique string.
+        const textSelector = await page
+            .locator('text/Customize and automate')
+            .waitHandle();
+        const fullTitle = await textSelector?.evaluate(el => el.textContent);
 
-    await browser.close();
+        // Print the full title.
+        console.log('The title of this blog post is "%s".', fullTitle);
+    } catch (error) {
+        console.error('Error during scraping:', error);
+    } finally {
+        await browser.close();
+    }
 }
 
-app()
+app().catch(console.error);
