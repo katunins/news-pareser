@@ -15,7 +15,7 @@ async function app() {
     })
     const page = await browser.newPage();
     // Navigate the page to a URL.
-    await page.goto('https://developer.chrome.com/');
+    await page.goto('https://medium.com/');
 
     // Set screen size.
     await page.setViewport({ width: 1080, height: 1024 });
@@ -28,7 +28,7 @@ async function app() {
 
     // Locate the full title with a unique string.
     const textSelector = await page
-        .locator('text/Customize and automate')
+        .locator('text/Sign in')
         .waitHandle();
     const fullTitle = await textSelector?.evaluate(el => el.textContent);
 
