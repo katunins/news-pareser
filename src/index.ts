@@ -1,49 +1,14 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
 
 async function app() {
-    const browser = await puppeteer.launch({
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
-        ],
-        executablePath: process.env.CHROME_BIN || undefined
-    });
-
-    try {
-        const page = await browser.newPage();
-
-        // Navigate the page to a URL.
-        await page.goto('https://developer.chrome.com/');
-
-        // Set screen size.
-        await page.setViewport({ width: 1080, height: 1024 });
-
-        // Type into search box using accessible input name.
-        await page.locator('aria/Search').fill('automate beyond recorder');
-
-        // Wait and click on first result.
-        await page.locator('.devsite-result-item-link').click();
-
-        // Locate the full title with a unique string.
-        const textSelector = await page
-            .locator('text/Customize and automate')
-            .waitHandle();
-        const fullTitle = await textSelector?.evaluate(el => el.textContent);
-
-        // Print the full title.
-        console.log('The title of this blog post is "%s".', fullTitle);
-    } catch (error) {
-        console.error('Error during scraping:', error);
-    } finally {
-        await browser.close();
-    }
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage();
+    await page.goto('https://medium.com/');
+    await page.setViewport({ width: 1080, height: 1024 });
+    const textSelector = await page
+        .locator('text/Sign in')
+        .waitHandle();
+    console.log('textSelector', textSelector)
 }
 
-app().catch(console.error);
+app()
