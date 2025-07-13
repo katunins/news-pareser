@@ -7,10 +7,10 @@ async function app() {
         ]
     })
     const page = await browser.newPage();
-    await page.goto('https://medium.com/');
+    await page.goto('https://ikatunin.ru/');
     await page.setViewport({ width: 1080, height: 1024 });
     const textSelector = await page
-        .locator('text/Sign in')
+        .locator('text/Павел')
         .waitHandle();
     console.log('textSelector', textSelector)
 }
