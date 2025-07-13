@@ -1,7 +1,11 @@
 import puppeteer from 'puppeteer'
 
 async function app() {
-    const browser = await puppeteer.launch()
+    const browser = await puppeteer.launch({
+        args: [
+            ' --no-sandbox'
+        ]
+    })
     const page = await browser.newPage();
     await page.goto('https://medium.com/');
     await page.setViewport({ width: 1080, height: 1024 });
