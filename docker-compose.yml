@@ -30,59 +30,24 @@ services:
       - /dev/shm:/dev/shm
     networks:
       - selenium-network
-
-  firefox:
-    image: selenium/node-firefox:4.15.0
-    shm_size: 2gb
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=4
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    volumes:
-      - /dev/shm:/dev/shm
-    networks:
-      - selenium-network
-
-  app:
-    build: .
-    container_name: news-parser-app
-    depends_on:
-      selenium-hub:
-        condition: service_started
-      chrome:
-        condition: service_started
-      firefox:
-        condition: service_started
-    environment:
-      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
-    volumes:
-      - .:/app
-      - /app/node_modules
-    networks:
-      - selenium-network
-    restart: on-failure
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog
-    ports:
-      - "1025:1025" # SMTP порт
-      - "8025:8025" # Веб-интерфейс
-    environment:
-      # Настройки внешнего SMTP сервера (раскомментируйте и настройте по необходимости)
-      # - MH_HOSTNAME=mailhog
-      # - MH_SMTP_OUTGOING_HOST=smtp.gmail.com
-      # - MH_SMTP_OUTGOING_PORT=587
-      # - MH_SMTP_OUTGOING_EMAIL=your-email@gmail.com
-      # - MH_SMTP_OUTGOING_USERNAME=your-email@gmail.com
-      # - MH_SMTP_OUTGOING_PASSWORD=your-app-password
-      # - MH_SMTP_OUTGOING_USE_TLS=true
-    networks:
-      - selenium-network
+  # app:
+  #   build: .
+  #   container_name: news-parser-app
+  #   depends_on:
+  #     selenium-hub:
+  #       condition: service_started
+  #     chrome:
+  #       condition: service_started
+  #     firefox:
+  #       condition: service_started
+  #   environment:
+  #     - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - selenium-network
+  #   restart: on-failure
 
 networks:
   selenium-network:

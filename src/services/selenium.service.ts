@@ -1,7 +1,8 @@
-import { MAX_CONNECTION_ATTEMT, SELENIUM_HUB_URL, SITE_URL } from "../consts"
+import { SELENIUM_HUB_URL, SITE_URL } from "../consts"
 import { Builder, Browser, By, until, ThenableWebDriver, WebDriver, IWebDriverOptionsCookie } from 'selenium-webdriver'
-import { convertCoockieToMap } from "../utils/cookies"
 import { cookiesStorage } from "./storage.service"
+import { openURL } from "../stages/openURL.stage"
+import SeleniumStealth from '../services/selenium_stealth/index'
 
 class SeleniumService {
 
@@ -10,7 +11,7 @@ class SeleniumService {
     async init() {
         this.driver = await this.getDriver()
         await this.removeWebDriverProperties()
-        await this.driver?.get(SITE_URL)
+        await openURL(SITE_URL)
         await this.loadCookies()
         await this.driver?.navigate().refresh();
     }
@@ -32,12 +33,21 @@ class SeleniumService {
     async loadCookies() {
         // await this.driver?.manage().deleteAllCookies()
         const cookies = await cookiesStorage.load()
-        await this.driver?.get(SITE_URL)
         if (cookies) {
             console.log('✅ Cookies загружены')
             await this.setCookies(cookies)
         } else {
             console.log('❌ Не удалось загрузить Cookies')
+        }
+    }
+
+    async saveDriverCookies() {
+        const cookies = await this.driver?.manage().getCookies()
+        if (cookies) {
+            await cookiesStorage.save(cookies)
+            console.log('✅ Cookies из driver сохранены')
+        } else {
+            console.log('❌ Не удалось загрузить Cookies из dliver')
         }
     }
 
@@ -60,18 +70,26 @@ class SeleniumService {
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         ];
         const randomUA = userAgents[Math.floor(Math.random() * userAgents.length)];
-        options.addArguments(`--user-agent=${randomUA}`);
 
-        // Отключение флагов автоматизации
-        options.addArguments('--disable-blink-features=AutomationControlled');
-        options.addArguments('--disable-web-security');
-        options.addArguments('--disable-features=VizDisplayCompositor');
-
-        // Дополнительные настройки для маскировки
+        options.addArguments('--headless=new'); // Новый headless-режим
         options.addArguments('--no-sandbox');
         options.addArguments('--disable-dev-shm-usage');
         options.addArguments('--disable-gpu');
         options.addArguments('--window-size=1920,1080');
+        options.addArguments('--user-data-dir=/tmp/selenium-profile');
+        options.addArguments('--disable-blink-features=AutomationControlled');
+        options.addArguments('--disable-web-security');
+        options.addArguments('--disable-features=VizDisplayCompositor');
+        options.addArguments(`--user-agent=${randomUA}`);
+
+        // Отключение флагов автоматизации
+        // options.addArguments('--disable-blink-features=AutomationControlled');
+
+        // Дополнительные настройки для маскировки
+        // options.addArguments('--no-sandbox');
+        // options.addArguments('--disable-dev-shm-usage');
+        // options.addArguments('--disable-gpu');
+        // options.addArguments('--window-size=1920,1080');
 
         // Отключение изображений для ускорения (опционально)
         // options.addArguments('--blink-settings=imagesEnabled=false');
@@ -85,56 +103,33 @@ class SeleniumService {
             'useAutomationExtension': false
         });
 
-        return new Builder()
+        // Headful и user-data-dir
+        // НЕ добавляйте --headless
+        // options.addArguments('--user-data-dir=/tmp/selenium-profile');
+        // options.addArguments('--no-sandbox');
+        // options.addArguments('--disable-gpu');
+        // options.addArguments('--window-size=1920,1080');
+
+        const driver = await new Builder()
             .usingServer(SELENIUM_HUB_URL)
             .forBrowser(Browser.CHROME)
             .setChromeOptions(options)
-            .build()
+            .build();
+
+        // const stealth = new SeleniumStealth(driver);
+        // await stealth.stealth({
+        //     userAgent: randomUA,
+        //     languages: ['en-US', 'en'],
+        //     // ...другие опции
+        // });
+
+        return driver;
     }
 
     // Удаление свойств webdriver для обхода Cloudflare
     private async removeWebDriverProperties() {
-        if (!this.driver) return;
-
-        // Удаляем свойства webdriver из navigator
-        await this.driver.executeScript(`
-            Object.defineProperty(navigator, 'webdriver', {
-                get: () => undefined,
-            });
-        `);
-
-        // Удаляем свойства webdriver из window
-        await this.driver.executeScript(`
-            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
-            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
-            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
-        `);
-
-        // Маскируем chrome runtime (проверяем существование)
-        await this.driver.executeScript(`
-            if (!window.chrome) {
-                Object.defineProperty(window, 'chrome', {
-                    writable: true,
-                    enumerable: true,
-                    configurable: true,
-                    value: {
-                        runtime: {},
-                    },
-                });
-            }
-        `);
-
-        // Добавьте заголовки:
-        await this.driver.executeScript(`
-            Object.defineProperty(navigator, 'plugins', {
-                get: () => [1, 2, 3, 4, 5],
-            });
-            Object.defineProperty(navigator, 'languages', {
-                get: () => ['en-US', 'en'],
-            });
-        `);
-
-        console.log('✅ WebDriver свойства удалены');
+        // Если selenium-stealth всё делает, этот метод можно удалить или оставить пустым.
+        // Если что-то не покрывается — оставьте только это.
     }
 }
 

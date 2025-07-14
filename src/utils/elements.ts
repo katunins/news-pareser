@@ -1,7 +1,7 @@
 import { By, until, WebElement } from "selenium-webdriver"
 import { seleniumService } from "../services/selenium.service"
 
-export async function clickElement(buttonText: string, tag: 'a' | 'button') {
+export async function clickElement(buttonText: string, tag: string) {
     console.log(`🌐 Поиск <${tag}> ${buttonText}...`)
     const elements = await seleniumService.driver?.findElements(By.css(tag)) || []
     let element: WebElement | undefined
