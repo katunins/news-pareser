@@ -66,6 +66,24 @@ services:
       - selenium-network
     restart: on-failure
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025" # SMTP порт
+      - "8025:8025" # Веб-интерфейс
+    environment:
+      # Настройки внешнего SMTP сервера (раскомментируйте и настройте по необходимости)
+      # - MH_HOSTNAME=mailhog
+      # - MH_SMTP_OUTGOING_HOST=smtp.gmail.com
+      # - MH_SMTP_OUTGOING_PORT=587
+      # - MH_SMTP_OUTGOING_EMAIL=your-email@gmail.com
+      # - MH_SMTP_OUTGOING_USERNAME=your-email@gmail.com
+      # - MH_SMTP_OUTGOING_PASSWORD=your-app-password
+      # - MH_SMTP_OUTGOING_USE_TLS=true
+    networks:
+      - selenium-network
+
 networks:
   selenium-network:
     driver: bridge
