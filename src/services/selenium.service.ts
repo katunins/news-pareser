@@ -10,6 +10,7 @@ class SeleniumService {
     async init() {
         this.driver = await this.getDriver()
         await this.removeWebDriverProperties()
+        await this.driver?.get(SITE_URL)
         await this.loadCookies()
         await this.driver?.navigate().refresh();
     }
